@@ -149,7 +149,7 @@
 	      this.rivalCell.follow(this.playerCell.pos, (this.rivalCell.radius * 4));
 	    } else {
 	      var newPos = Util.findSmallerPos(this.rivalCell.radius, this.enemyCells);
-	      this.rivalCell.follow(newPos, 30);
+	      this.rivalCell.follow(newPos, (this.rivalCell.radius * 3));
 	    }
 	    this.rivalCell.draw(ctx);
 	  }
@@ -159,16 +159,27 @@
 	  if (!window.MOUSE_POS[0]) {
 	    return [0,0];
 	  }
-	  var buffer = this.playerCell.radius * 2;
+	  var buffer = this.playerCell.radius;
 
-	  var diffX = (window.MOUSE_POS[0] - pos[0])/(this.playerCell.radius * 2);
-	  var diffY = (window.MOUSE_POS[1] - pos[1])/(this.playerCell.radius * 2);
+	  var diffX = (window.MOUSE_POS[0] - pos[0])/buffer;
+	  var diffY = (window.MOUSE_POS[1] - pos[1])/buffer;
 	  return [(diffX), (diffY)];
 	};
 
 	Game.prototype.moveEnemies = function() {
+	  var player = this.playerCell;
+	  var rival = this.rivalCell;
+	  if (rival === null) { rival = {} };
 	  this.enemyCells.forEach(function(cell) {
-	    cell.move();
+	    if (cell.radius < player.radius && cell.radius < rival.radius) {
+	      cell.avoid(player.pos, rival.pos);
+	    } else if (cell.radius < player.radius) {
+	      cell.avoid(player.pos);
+	    } else if (cell.radius < rival.radius) {
+	      cell.avoid(rival.pos);
+	    } else {
+	      cell.wander();
+	    }
 	  });
 	};
 
@@ -272,16 +283,16 @@
 	};
 
 	Util.randomPos = function() {
-	  return [getRandomInRange(0, DIM_X), getRandomInRange(0, DIM_Y)];
+	  return [this.getRandomInRange(0, DIM_X), this.getRandomInRange(0, DIM_Y)];
 	};
 
 	Util.randomSize = function(playerRadius) {
-	  var size = getRandomInRange(5, (playerRadius + 25));
+	  var size = this.getRandomInRange(5, (playerRadius + 25));
 	  return size;
 	};
 
 	Util.findVel = function(radius) {
-	  var vector = VEL_TRANSFORMS[getRandomInRange(1, 4)];
+	  var vector = VEL_TRANSFORMS[this.getRandomInRange(1, 4)];
 	  var initial = [(vector[0] * Math.random())*10, (vector[1] * Math.random())*10];
 	  return [initial[0]/(radius/6), initial[1]/(radius/6)];
 	};
@@ -294,7 +305,7 @@
 	    }
 	  });
 	  if (count === 0) {
-	    enemies[getRandomInRange(0, (enemies.length - 1))].radius = 10;
+	    enemies[this.getRandomInRange(0, (enemies.length - 1))].radius = 10;
 	  }
 	};
 
@@ -309,7 +320,7 @@
 	  return enemy.pos;
 	};
 
-	var getRandomInRange = function(min, max) {
+	Util.getRandomInRange = function(min, max) {
 	  return (Math.floor(Math.random() * (max - min + 1)) + min);
 	};
 
@@ -402,7 +413,7 @@
 	var RivalCell = function(options) {
 	  options.pos = options.pos;
 	  options.vel = options.vel || [0, 0];
-	  options.radius = 50;
+	  options.radius = 20;
 	  options.color = "#F00";
 
 	  this.follow = follow;
@@ -423,10 +434,17 @@
 
 	var findVel = function(pos1, pos2, radius, buffer) {
 	  if (pos1 === undefined || pos2 === undefined) {
-	    // debugger;
+	    return;
 	  }
-	  var diffX = (pos2[0] - pos1[0])/buffer;
-	  var diffY = (pos2[1] - pos1[1])/buffer;
+
+	  var distX = pos2[0] - pos1[0];
+	  var distY = pos2[1] - pos1[1];
+
+	  var leadX = distX > 0 ? 100 : -100
+	  var leadY = distY > 0 ? 100 : -100
+
+	  var diffX = (distX + leadX)/buffer;
+	  var diffY = (distY + leadY)/buffer;
 	  return [(diffX), (diffY)];
 	};
 
@@ -445,12 +463,46 @@
 
 	var EnemyCell = function(options) {
 	  options.pos = options.pos;
-	  options.vel = options.vel || [0, 0];
+	  options.vel = options.vel || [Math.random(), Math.random()];
 	  options.radius = options.radius;
 	  options.color = "#00F";
 
+	  this.avoid = avoid;
+	  this.wander = wander;
+
 	  MovingObject.call(this, options);
 	};
+
+
+	var avoid = function(player, rival) {
+	  var target = player;
+	  if (rival) {
+	    var rivalDist = Util.distance(this.pos, rival);
+	    var playerDist = Util.distance(this.pos, player);
+	    if (rivalDist < playerDist) { target = rival };
+	  }
+	  if (Util.distance(this.pos, target) < 100) {
+	    this.vel = findVel(this.pos, target, this.radius);
+	  }
+	  this.move();
+	};
+
+	var wander = function() {
+	  // this.vel[0] = (this.vel[0] * Math.random());
+	  // this.vel[1] = (this.vel[1] * Math.random());
+
+	  this.move();
+	};
+
+	var findVel = function(pos1, pos2, radius) {
+
+	  var buffer = radius * 4
+
+	  var diffX = (pos1[0] - pos2[0])/buffer;
+	  var diffY = (pos1[1] - pos2[1])/buffer;
+	  return [(diffX), (diffY)];
+	};
+
 
 
 	Util.inherits(EnemyCell, MovingObject);

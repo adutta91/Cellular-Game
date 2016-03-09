@@ -46,11 +46,11 @@
 
 	
 	var Game = __webpack_require__(1);
-	var GameView = __webpack_require__(6);
-	var Util = __webpack_require__(4);
-	var PlayerCell = __webpack_require__(2);
-	var EnemyCell = __webpack_require__(5);
-	var MovingObject = __webpack_require__(3);
+	var GameView = __webpack_require__(7);
+	var Util = __webpack_require__(2);
+	var PlayerCell = __webpack_require__(3);
+	var EnemyCell = __webpack_require__(6);
+	var MovingObject = __webpack_require__(4);
 
 	document.body.style.cursor='crosshair';
 
@@ -74,11 +74,11 @@
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Util = __webpack_require__(4);
+	var Util = __webpack_require__(2);
 
-	var PlayerCell = __webpack_require__(2);
-	var RivalCell = __webpack_require__(7);
-	var EnemyCell = __webpack_require__(5);
+	var PlayerCell = __webpack_require__(3);
+	var RivalCell = __webpack_require__(5);
+	var EnemyCell = __webpack_require__(6);
 
 	DIM_X = window.innerWidth;
 	DIM_Y = window.innerHeight;
@@ -144,9 +144,15 @@
 	  this.playerCell.vel = this.findVel(this.playerCell.pos);
 	  this.playerCell.move();
 	  this.playerCell.draw(ctx);
-
-	  this.rivalCell.follow(this.playerCell.pos);
-	  this.rivalCell.draw(ctx);
+	  if (this.rivalCell !== null) {
+	    if (this.playerCell.radius < this.rivalCell.radius) {
+	      this.rivalCell.follow(this.playerCell.pos, (this.rivalCell.radius * 4));
+	    } else {
+	      var newPos = Util.findSmallerPos(this.rivalCell.radius, this.enemyCells);
+	      this.rivalCell.follow(newPos, 30);
+	    }
+	    this.rivalCell.draw(ctx);
+	  }
 	};
 
 	Game.prototype.findVel = function(pos) {
@@ -168,12 +174,21 @@
 
 	Game.prototype.checkCollisions = function() {
 	  var player = this.playerCell
-	  if (player.hasCollidedWith(this.rivalCell)) {
-	    this.gameOver = true;
+	  var rival = this.rivalCell
+	  if (player.hasCollidedWith(rival)) {
+	    if (player.radius > rival.radius) {
+	      this.consume(player, rival);
+	      this.rivalCell = null;
+	      this.points += 50;
+	    } else {
+	      this.gameOver = true;
+	    }
 	  }
 	  this.enemyCells.forEach(function(cell) {
 	    if (cell.hasCollidedWith(player)) {
 	      this.handleCollision(player, cell);
+	    } else if (cell.hasCollidedWith(rival) && cell.radius < rival.radius) {
+	      this.consume(rival, cell);
 	    }
 	  }.bind(this));
 	};
@@ -199,13 +214,18 @@
 	  Util.ensureSmallEnemies(this.playerCell.radius, this.enemyCells);
 	};
 
-	Game.prototype.consume = function(player, enemy) {
-	  var growth = (enemy.radius / 4);
-	  var idx = this.enemyCells.indexOf(enemy);
-	  this.enemyCells.splice(idx, 1);
-	  player.radius += growth;
-	  this.rivalCell.radius = player.radius + 1;
-	  this.points += Math.floor(growth);
+	Game.prototype.consume = function(larger, smaller) {
+	  var growth = (smaller.radius / 10);
+	  if (smaller instanceof EnemyCell) {
+	    var idx = this.enemyCells.indexOf(smaller);
+	    this.enemyCells.splice(idx, 1);
+	  }
+	  larger.radius += growth;
+
+	  if (larger instanceof PlayerCell) {
+	    this.points += Math.floor(growth);
+	  }
+
 	};
 
 	Game.prototype.createEnemyCell = function() {
@@ -226,82 +246,6 @@
 
 /***/ },
 /* 2 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var MovingObject = __webpack_require__(3);
-	var Util = __webpack_require__(4);
-
-	var PlayerCell = function(options) {
-	  options.pos = options.pos;
-	  options.vel = options.vel || [0, 0];
-	  options.radius = 15;
-	  options.color = "#FFFFFF";
-
-	  MovingObject.call(this, options);
-	}
-
-
-	Util.inherits(PlayerCell, MovingObject);
-
-	module.exports = PlayerCell;
-
-
-/***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Util = __webpack_require__(4);
-
-	var MovingObject = function (options) {
-	  this.pos = options.pos;
-	  this.vel = options.vel;
-	  this.radius = options.radius;
-	  this.color = options.color;
-	};
-
-	MovingObject.prototype.draw = function(ctx) {
-	  ctx.fillStyle = this.color;
-
-	  ctx.beginPath();
-	  ctx.arc(
-	    this.pos[0], this.pos[1], this.radius, 0, 2 * Math.PI, true
-	  );
-	  ctx.fill();
-	};
-
-	MovingObject.prototype.move = function() {
-	  
-	  var newPos = [];
-	  newPos[0] = this.pos[0] += this.vel[0];
-	  newPos[1] = this.pos[1] += this.vel[1];
-
-	  if (newPos[0] > DIM_X || newPos[0] < 0) {
-	    this.vel[0] = this.vel[0] * -1
-	    newPos[0] = this.pos[0] += this.vel[0];
-	  } else if (newPos[1] > DIM_Y || newPos[1] < 0) {
-	    this.vel[1] = this.vel[1] * -1
-	    newPos[1] = this.pos[1] += this.vel[1];
-	  }
-
-	  this.pos = newPos;
-	};
-
-	MovingObject.prototype.hasCollidedWith = function(otherObject) {
-	  var distance = Util.distance(this.pos, otherObject.pos);
-
-	  if (distance < this.radius || distance < otherObject.radius) {
-	    return true;
-	  } else {
-	    return false;
-	  }
-	};
-
-
-	module.exports = MovingObject;
-
-
-/***/ },
-/* 4 */
 /***/ function(module, exports) {
 
 	
@@ -350,8 +294,19 @@
 	    }
 	  });
 	  if (count === 0) {
-	    enemies[getRandomInRange(0, enemies.length)].radius = 10;
+	    enemies[getRandomInRange(0, (enemies.length - 1))].radius = 10;
 	  }
+	};
+
+	Util.findSmallerPos = function(radius, enemies) {
+	  var enemy = {};
+	  enemies.forEach(function(cell) {
+	    if (cell.radius < radius) {
+	      enemy = cell;
+	    }
+	  });
+
+	  return enemy.pos;
 	};
 
 	var getRandomInRange = function(min, max) {
@@ -362,11 +317,131 @@
 
 
 /***/ },
+/* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var MovingObject = __webpack_require__(4);
+	var Util = __webpack_require__(2);
+
+	var PlayerCell = function(options) {
+	  options.pos = options.pos;
+	  options.vel = options.vel || [0, 0];
+	  options.radius = 15;
+	  options.color = "#FFFFFF";
+
+	  MovingObject.call(this, options);
+	}
+
+
+	Util.inherits(PlayerCell, MovingObject);
+
+	module.exports = PlayerCell;
+
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Util = __webpack_require__(2);
+
+	var MovingObject = function (options) {
+	  this.pos = options.pos;
+	  this.vel = options.vel;
+	  this.radius = options.radius;
+	  this.color = options.color;
+	};
+
+	MovingObject.prototype.draw = function(ctx) {
+	  ctx.fillStyle = this.color;
+
+	  ctx.beginPath();
+	  ctx.arc(
+	    this.pos[0], this.pos[1], this.radius, 0, 2 * Math.PI, true
+	  );
+	  ctx.fill();
+	};
+
+	MovingObject.prototype.move = function() {
+
+	  var newPos = [];
+	  newPos[0] = this.pos[0] += this.vel[0];
+	  newPos[1] = this.pos[1] += this.vel[1];
+
+	  if (newPos[0] > DIM_X || newPos[0] < 0) {
+	    this.vel[0] = this.vel[0] * -1
+	    newPos[0] = this.pos[0] += this.vel[0];
+	  } else if (newPos[1] > DIM_Y || newPos[1] < 0) {
+	    this.vel[1] = this.vel[1] * -1
+	    newPos[1] = this.pos[1] += this.vel[1];
+	  }
+
+	  this.pos = newPos;
+	};
+
+	MovingObject.prototype.hasCollidedWith = function(otherObject) {
+	  if (otherObject === null) { return false }
+	  var distance = Util.distance(this.pos, otherObject.pos);
+	  if (distance < (this.radius + otherObject.radius)) {
+	    return true;
+	  } else {
+	    return false;
+	  }
+	};
+
+
+	module.exports = MovingObject;
+
+
+/***/ },
 /* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Util = __webpack_require__(4);
-	var MovingObject = __webpack_require__(3);
+	var MovingObject = __webpack_require__(4);
+	var Util = __webpack_require__(2);
+
+	var RivalCell = function(options) {
+	  options.pos = options.pos;
+	  options.vel = options.vel || [0, 0];
+	  options.radius = 50;
+	  options.color = "#F00";
+
+	  this.follow = follow;
+	  this.seek = seek;
+
+	  MovingObject.call(this, options);
+	}
+
+	var follow = function(pos, buffer) {
+	  this.vel = findVel(this.pos, pos, this.radius, buffer);
+	  this.move();
+	};
+
+	var seek = function(pos) {
+	  this.vel = [(pos[0] - this.pos[0]), (pos[1] - this.pos[1])];
+	  this.move();
+	};
+
+	var findVel = function(pos1, pos2, radius, buffer) {
+	  if (pos1 === undefined || pos2 === undefined) {
+	    // debugger;
+	  }
+	  var diffX = (pos2[0] - pos1[0])/buffer;
+	  var diffY = (pos2[1] - pos1[1])/buffer;
+	  return [(diffX), (diffY)];
+	};
+
+
+	Util.inherits(RivalCell, MovingObject);
+
+	module.exports = RivalCell;
+
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Util = __webpack_require__(2);
+	var MovingObject = __webpack_require__(4);
 
 	var EnemyCell = function(options) {
 	  options.pos = options.pos;
@@ -384,7 +459,7 @@
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -419,41 +494,6 @@
 
 
 	module.exports = GameView;
-
-
-/***/ },
-/* 7 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var MovingObject = __webpack_require__(3);
-	var Util = __webpack_require__(4);
-
-	var RivalCell = function(options) {
-	  options.pos = options.pos;
-	  options.vel = options.vel || [0, 0];
-	  options.radius = 15;
-	  options.color = "#F00";
-
-	  this.follow = follow;
-
-	  MovingObject.call(this, options);
-	}
-
-	var follow = function(pos) {
-	  this.vel = findVel(this.pos, pos, this.radius);
-	  this.move();
-	};
-
-	var findVel = function(pos1, pos2, radius) {
-	  var diffX = (pos2[0] - pos1[0])/(radius * 4);
-	  var diffY = (pos2[1] - pos1[1])/(radius * 4);
-	  return [(diffX), (diffY)];
-	};
-
-
-	Util.inherits(RivalCell, MovingObject);
-
-	module.exports = RivalCell;
 
 
 /***/ }

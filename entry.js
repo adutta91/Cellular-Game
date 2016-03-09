@@ -11,10 +11,14 @@ document.body.style.cursor='crosshair';
 var canvasEl = document.getElementsByTagName("canvas")[0];
 canvasEl.width = window.innerWidth;
 canvasEl.height = window.innerHeight;
-
 var ctx = canvasEl.getContext("2d");
+
 var game = new Game();
 var gameView = new GameView(game, ctx);
-
-
 gameView.start();
+
+document.onkeypress = function(event) {
+  if (event.code === "Space") {
+    location.reload();
+  }
+};

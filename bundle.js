@@ -57,13 +57,17 @@
 	var canvasEl = document.getElementsByTagName("canvas")[0];
 	canvasEl.width = window.innerWidth;
 	canvasEl.height = window.innerHeight;
-
 	var ctx = canvasEl.getContext("2d");
+
 	var game = new Game();
 	var gameView = new GameView(game, ctx);
-
-
 	gameView.start();
+
+	document.onkeypress = function(event) {
+	  if (event.code === "Space") {
+	    location.reload();
+	  }
+	};
 
 
 /***/ },
@@ -113,20 +117,14 @@
 	  this.add(rivalCell);
 	};
 
+
 	Game.prototype.draw = function(ctx) {
 	  ctx.clearRect(0, 0, DIM_X, DIM_Y);
 	  ctx.fillStyle = "#000000";
 	  ctx.fillRect(0, 0, DIM_X, DIM_Y);
 
-	  ctx.font = "30px Arial";
-	  ctx.fillStyle = "red";
-	  ctx.fillText(this.points,10,50);
-
-	  this.playerCell.vel = this.findVel(this.playerCell.pos);
-	  this.playerCell.move();
-
-	  this.playerCell.draw(ctx);
-	  this.rivalCell.draw(ctx);
+	  this.drawPoints(ctx);
+	  this.moveMainCells(ctx);
 
 	  this.checkCollisions();
 	  this.checkEnemies();
@@ -134,6 +132,20 @@
 	  this.enemyCells.forEach(function(cell) {
 	    cell.draw(ctx);
 	  });
+	};
+
+	Game.prototype.drawPoints = function(ctx) {
+	  ctx.font = "30px Arial";
+	  ctx.fillStyle = "red";
+	  ctx.fillText(this.points,10,50);
+	};
+
+	Game.prototype.moveMainCells = function(ctx) {
+	  this.playerCell.vel = this.findVel(this.playerCell.pos);
+	  this.playerCell.move();
+	  this.playerCell.draw(ctx);
+
+	  this.rivalCell.draw(ctx);
 	};
 
 	Game.prototype.moveEnemies = function() {
@@ -155,18 +167,21 @@
 	  if (player.radius > enemy.radius) {
 	    this.consume(player, enemy);
 	  } else if (enemy.radius >= player.radius) {
-	    // this.gameOver = true;
-	    alert('GAME OVER');
+	    this.gameOver = true;
 	  }
 	};
 
 	Game.prototype.checkEnemies = function() {
 	  var numEnemies = Math.floor(this.playerCell.radius / 5)
+
 	  if (numEnemies < 5) { numEnemies = 5 };
 	  if (numEnemies > 15) { numEnemies = 10 };
+
 	  while (this.enemyCells.length < numEnemies) {
 	    this.add(this.createEnemyCell());
 	  }
+
+	  Util.ensureSmallEnemies(this.playerCell.radius, this.enemyCells);
 	};
 
 	Game.prototype.consume = function(player, enemy) {
@@ -174,8 +189,8 @@
 	  var idx = this.enemyCells.indexOf(enemy);
 	  this.enemyCells.splice(idx, 1);
 	  player.radius += growth;
+	  this.rivalCell.radius = player.radius + 1;
 	  this.points += Math.floor(growth);
-	  console.log(this.points);
 	};
 
 	Game.prototype.findVel = function(pos, that) {
@@ -200,12 +215,6 @@
 	    radius: radius
 	  });
 	  return enemyCell
-	};
-
-	Game.prototype.clear = function(ctx) {
-	  ctx.clearRect(0, 0, DIM_X, DIM_Y);
-	  ctx.fillStyle = "#000000";
-	  ctx.fillRect(0, 0, DIM_X, DIM_Y);
 	};
 
 	module.exports = Game;
@@ -327,6 +336,18 @@
 	  return [initial[0]/(radius/6), initial[1]/(radius/6)];
 	};
 
+	Util.ensureSmallEnemies = function(playerRadius, enemies) {
+	  var count = 0;
+	  enemies.forEach(function(cell) {
+	    if (cell.radius < playerRadius) {
+	      count += 1;
+	    }
+	  });
+	  if (count === 0) {
+	    enemies[getRandomInRange(0, enemies.length)].radius = 10;
+	  }
+	};
+
 	var getRandomInRange = function(min, max) {
 	  return (Math.floor(Math.random() * (max - min + 1)) + min);
 	};
@@ -358,9 +379,10 @@
 
 /***/ },
 /* 6 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	
+	var Game = __webpack_require__(1);
 
 	window.MOUSE_POS = [];
 
@@ -380,9 +402,14 @@
 	};
 
 	GameView.prototype.animate = function() {
-	  this.game.draw(this.ctx);
-	  requestAnimationFrame(this.animate.bind(this));
+	  if (!this.game.gameOver) {
+	    this.game.draw(this.ctx);
+	    requestAnimationFrame(this.animate.bind(this));
+	  } else {
+	    alert("Game Over!");
+	  }
 	};
+
 
 
 	module.exports = GameView;

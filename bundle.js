@@ -123,21 +123,21 @@
 	  ctx.fillStyle = "#000000";
 	  ctx.fillRect(0, 0, DIM_X, DIM_Y);
 
-	  this.drawPoints(ctx);
-	  this.moveMainCells(ctx);
-
 	  this.checkCollisions();
 	  this.checkEnemies();
 	  this.moveEnemies();
 	  this.enemyCells.forEach(function(cell) {
 	    cell.draw(ctx);
 	  });
+
+	  this.drawPoints(ctx);
+	  this.moveMainCells(ctx);
 	};
 
 	Game.prototype.drawPoints = function(ctx) {
 	  ctx.font = "30px Arial";
 	  ctx.fillStyle = "red";
-	  ctx.fillText(this.points,10,50);
+	  ctx.fillText(this.points, 20, 50);
 	};
 
 	Game.prototype.moveMainCells = function(ctx) {
@@ -145,7 +145,19 @@
 	  this.playerCell.move();
 	  this.playerCell.draw(ctx);
 
+	  this.rivalCell.follow(this.playerCell.pos);
 	  this.rivalCell.draw(ctx);
+	};
+
+	Game.prototype.findVel = function(pos) {
+	  if (!window.MOUSE_POS[0]) {
+	    return [0,0];
+	  }
+	  var buffer = this.playerCell.radius * 2;
+
+	  var diffX = (window.MOUSE_POS[0] - pos[0])/(this.playerCell.radius * 2);
+	  var diffY = (window.MOUSE_POS[1] - pos[1])/(this.playerCell.radius * 2);
+	  return [(diffX), (diffY)];
 	};
 
 	Game.prototype.moveEnemies = function() {
@@ -156,6 +168,9 @@
 
 	Game.prototype.checkCollisions = function() {
 	  var player = this.playerCell
+	  if (player.hasCollidedWith(this.rivalCell)) {
+	    this.gameOver = true;
+	  }
 	  this.enemyCells.forEach(function(cell) {
 	    if (cell.hasCollidedWith(player)) {
 	      this.handleCollision(player, cell);
@@ -175,7 +190,7 @@
 	  var numEnemies = Math.floor(this.playerCell.radius / 5)
 
 	  if (numEnemies < 5) { numEnemies = 5 };
-	  if (numEnemies > 15) { numEnemies = 10 };
+	  if (numEnemies > 10) { numEnemies = 10 };
 
 	  while (this.enemyCells.length < numEnemies) {
 	    this.add(this.createEnemyCell());
@@ -191,17 +206,6 @@
 	  player.radius += growth;
 	  this.rivalCell.radius = player.radius + 1;
 	  this.points += Math.floor(growth);
-	};
-
-	Game.prototype.findVel = function(pos, that) {
-	  if (!window.MOUSE_POS[0]) {
-	    return [0,0];
-	  }
-	  var buffer = this.playerCell.radius * 2;
-
-	  var diffX = (window.MOUSE_POS[0] - pos[0])/(this.playerCell.radius * 2);
-	  var diffY = (window.MOUSE_POS[1] - pos[1])/(this.playerCell.radius * 2);
-	  return [(diffX), (diffY)];
 	};
 
 	Game.prototype.createEnemyCell = function() {
@@ -236,6 +240,7 @@
 	  MovingObject.call(this, options);
 	}
 
+
 	Util.inherits(PlayerCell, MovingObject);
 
 	module.exports = PlayerCell;
@@ -265,6 +270,7 @@
 	};
 
 	MovingObject.prototype.move = function() {
+	  
 	  var newPos = [];
 	  newPos[0] = this.pos[0] += this.vel[0];
 	  newPos[1] = this.pos[1] += this.vel[1];
@@ -428,8 +434,22 @@
 	  options.radius = 15;
 	  options.color = "#F00";
 
+	  this.follow = follow;
+
 	  MovingObject.call(this, options);
 	}
+
+	var follow = function(pos) {
+	  this.vel = findVel(this.pos, pos, this.radius);
+	  this.move();
+	};
+
+	var findVel = function(pos1, pos2, radius) {
+	  var diffX = (pos2[0] - pos1[0])/(radius * 4);
+	  var diffY = (pos2[1] - pos1[1])/(radius * 4);
+	  return [(diffX), (diffY)];
+	};
+
 
 	Util.inherits(RivalCell, MovingObject);
 

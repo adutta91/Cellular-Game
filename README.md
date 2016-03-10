@@ -23,5 +23,5 @@ Press "R" to refresh the page, and "Space" to start the game
 
 
 
-[link]: http://www.google.com
+[link]: http://adutta91.github.io/Cellular-Game/
 [agar]: http://www.agar.io

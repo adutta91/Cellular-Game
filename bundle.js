@@ -348,7 +348,7 @@
 	  options.pos = options.pos;
 	  options.vel = options.vel || [0, 0];
 	  options.radius = 15;
-	  options.color = "#FFFFFF";
+	  options.color = "#4FB34F";
 
 	  MovingObject.call(this, options);
 	}
@@ -556,9 +556,9 @@
 
 	  this.ctx.textBaseline="center";
 	  this.ctx.textAlign="center";
-	  this.ctx.font="24px Arial";
+	  this.ctx.font="24px Inconsolata";
 	  this.ctx.fillText("Cellular", xPos, yPos - 70);
-	  this.ctx.font="16px Arial";
+	  this.ctx.font="16px Inconsolata";
 	  this.ctx.fillText("Guide your cell with the mouse cursor to eat the other cells!",
 	                   xPos, yPos - 30);
 	  this.ctx.fillText("But watch out for your rival!",
@@ -582,10 +582,10 @@
 	  this.ctx.textBaseline="center";
 	  this.ctx.textAlign="center";
 
-	  this.ctx.font="24px Arial";
+	  this.ctx.font="24px Inconsolata";
 	  this.ctx.fillText("GAME OVER!", xPos, yPos - 70);
 
-	  this.ctx.font="16px Arial";
+	  this.ctx.font="16px Inconsolata";
 	  this.ctx.fillText("You were eaten!",
 	                   xPos, yPos - 30);
 	  this.ctx.fillText("Your score was: " + this.game.points,

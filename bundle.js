@@ -166,9 +166,11 @@
 	    return [0,0];
 	  }
 	  var buffer = this.playerCell.radius;
+	  var distance = Util.distance(pos, window.MOUSE_POS);
 
 	  var diffX = (window.MOUSE_POS[0] - pos[0])/buffer;
 	  var diffY = (window.MOUSE_POS[1] - pos[1])/buffer;
+
 	  return [(diffX), (diffY)];
 	};
 
@@ -437,7 +439,9 @@
 	}
 
 	var follow = function(pos, buffer) {
-	  this.vel = findVel(this.pos, pos, this.radius, buffer);
+	  var vel = findVel(this.pos, pos, this.radius, buffer);
+	  // if (!vel === 'undefined') { this.vel = vel }
+	  this.vel = vel;
 	  this.move();
 	};
 
@@ -557,18 +561,10 @@
 	  var xPos = (DIM_X/2);
 	  var yPos = (DIM_Y/2);
 
-	  var my_gradient=this.ctx.createLinearGradient(0,0,0,170);
-	  my_gradient.addColorStop(0,"black");
-	  my_gradient.addColorStop(1,"white");
-
 	  this.ctx.strokeStyle = "#C9C9C9";
-	  this.ctx.fillStyle = my_gradient;
+	  this.ctx.fillStyle = "#FFFFFF";
 
 
-	  this.ctx.strokeRect(xPos - 300, yPos - 150, 600, 300);
-	  this.ctx.fillRect(xPos - 300, yPos - 150, 600, 300);
-
-	  this.ctx.fillStyle = "#C9C9C9";
 	  this.ctx.textBaseline="center";
 	  this.ctx.textAlign="center";
 	  this.ctx.font="24px Inconsolata";

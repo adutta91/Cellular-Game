@@ -15,10 +15,13 @@ var ctx = canvasEl.getContext("2d");
 
 var game = new Game();
 var gameView = new GameView(game, ctx);
-gameView.start();
+gameView.welcome();
 
 document.onkeypress = function(event) {
-  if (event.code === "Space") {
+  if (event.code === "KeyR") {
     location.reload();
+  }
+  if (event.code === "Space") {
+    gameView.start();
   }
 };

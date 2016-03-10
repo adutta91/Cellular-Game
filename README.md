@@ -1,5 +1,5 @@
 ##Cellular - [Game][link]
-Cellular is a browser JavaScript game inspired by the popular agar.io. The purpose
+Cellular is a browser JavaScript game inspired by the popular [Agario][agar]. The purpose
 of the game is to control your cell to eat those cells that are smaller than you,
 avoiding the larger cells.
 
@@ -24,3 +24,4 @@ Press "R" to refresh the page, and "Space" to start the game
 
 
 [link]: http://www.google.com
+[agar]: http://www.agar.io

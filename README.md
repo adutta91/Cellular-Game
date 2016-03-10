@@ -9,7 +9,7 @@ avoiding the larger cells.
 The game begins with your rival slightly larger than you. The rival cell is programmed
 to chase you when it is larger than you, or eat smaller cells until it IS larger
 than you. There is a chance, though! You can eat your rival when you are larger,
-gaining you a whopping 50 points.
+gaining you a whopping 50 point. But beware!! - It'll be back, and in greater size...
 
 ####Enemy Cells
 The enemy cells that are larger than you have nothing to worry about, so they wander

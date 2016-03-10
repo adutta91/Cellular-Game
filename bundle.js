@@ -114,11 +114,13 @@
 	  this.add(playerCell);
 	};
 
-	Game.prototype.addRivalCell = function(that) {
+	Game.prototype.addRivalCell = function() {
 	  var rivalCell = new RivalCell({
-	    pos: [DIM_X - 100, DIM_Y/2]
+	    pos: [DIM_X - 100, DIM_Y/2],
+	    vel: [0, 0],
+	    radius: this.playerCell.radius + 5
 	  });
-	  that.add(rivalCell);
+	  this.add(rivalCell);
 	};
 
 
@@ -194,7 +196,7 @@
 	    if (player.radius > rival.radius) {
 	      this.consume(player, rival);
 	      this.rivalCell = null;
-	      // setTimeout(this.addRivalCell(this), 10000);
+	      setTimeout(this.addRivalCell.bind(this), 10000);
 	      this.points += 50;
 	    } else {
 	      this.gameOver = true;
@@ -232,7 +234,6 @@
 	  while (this.enemyCells.length < numEnemies) {
 	    this.add(this.createEnemyCell());
 	  }
-	  Util.ensureSmallEnemies(this.playerCell.radius, this.enemyCells);
 	};
 
 	Game.prototype.consume = function(larger, smaller) {
@@ -254,11 +255,16 @@
 	  var radius = Util.randomSize(this.playerCell.radius);
 	  var vel = Util.findVel(radius);
 
+	  if (!Util.smallEnemiesExist(this.playerCell.radius, this.enemyCells)) {
+	    radius = 10;
+	  }
+
 	  var enemyCell = new EnemyCell({
 	    pos: pos,
 	    vel: vel,
 	    radius: radius
 	  });
+
 	  return enemyCell
 	};
 
@@ -307,16 +313,14 @@
 	  return [initial[0]/(radius/6), initial[1]/(radius/6)];
 	};
 
-	Util.ensureSmallEnemies = function(playerRadius, enemies) {
-	  var count = 0;
+	Util.smallEnemiesExist = function(playerRadius, enemies) {
+	  var result = false;
 	  enemies.forEach(function(cell) {
 	    if (cell.radius < playerRadius) {
-	      count += 1;
+	      result = true;
 	    }
 	  });
-	  if (count === 0) {
-	    enemies[this.getRandomInRange(0, (enemies.length - 1))].radius = 10;
-	  }
+	  return result;
 	};
 
 	Util.findSmallerPos = function(radius, enemies) {
@@ -423,7 +427,7 @@
 	var RivalCell = function(options) {
 	  options.pos = options.pos;
 	  options.vel = options.vel || [0, 0];
-	  options.radius = 20;
+	  options.radius = options.radius || 20;
 	  options.color = "#F00";
 
 	  this.follow = follow;
@@ -537,7 +541,7 @@
 	  this.game = game;
 	  this.ctx = ctx;
 	  this.game.addPlayerCell();
-	  this.game.addRivalCell(this.game);
+	  this.game.addRivalCell();
 	};
 
 
@@ -552,13 +556,24 @@
 	GameView.prototype.displayMessage = function() {
 	  var xPos = (DIM_X/2);
 	  var yPos = (DIM_Y/2);
-	  this.ctx.fillStyle = "#C9C9C9";
 
+	  var my_gradient=this.ctx.createLinearGradient(0,0,0,170);
+	  my_gradient.addColorStop(0,"black");
+	  my_gradient.addColorStop(1,"white");
+
+	  this.ctx.strokeStyle = "#C9C9C9";
+	  this.ctx.fillStyle = my_gradient;
+
+
+	  this.ctx.strokeRect(xPos - 300, yPos - 150, 600, 300);
+	  this.ctx.fillRect(xPos - 300, yPos - 150, 600, 300);
+
+	  this.ctx.fillStyle = "#C9C9C9";
 	  this.ctx.textBaseline="center";
 	  this.ctx.textAlign="center";
-	  this.ctx.font="24px Arial";
+	  this.ctx.font="24px Inconsolata";
 	  this.ctx.fillText("Cellular", xPos, yPos - 70);
-	  this.ctx.font="16px Arial";
+	  this.ctx.font="16px Inconsolata";
 	  this.ctx.fillText("Guide your cell with the mouse cursor to eat the other cells!",
 	                   xPos, yPos - 30);
 	  this.ctx.fillText("But watch out for your rival!",
@@ -566,8 +581,7 @@
 	  this.ctx.fillText("The larger cells well eat you too if you get too close, so be careful!",
 	                   xPos, yPos + 30);
 	  this.ctx.fillText("Press 'Space' to start the game, press 'R' to restart at anytime",
-	                   xPos, yPos + 60);
-
+	                   xPos, yPos + 80);
 	};
 
 	GameView.prototype.end = function() {
@@ -582,10 +596,10 @@
 	  this.ctx.textBaseline="center";
 	  this.ctx.textAlign="center";
 
-	  this.ctx.font="24px Arial";
+	  this.ctx.font="24px Inconsolata";
 	  this.ctx.fillText("GAME OVER!", xPos, yPos - 70);
 
-	  this.ctx.font="16px Arial";
+	  this.ctx.font="16px Inconsolata";
 	  this.ctx.fillText("You were eaten!",
 	                   xPos, yPos - 30);
 	  this.ctx.fillText("Your score was: " + this.game.points,

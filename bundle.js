@@ -46,7 +46,7 @@
 
 	
 	var Game = __webpack_require__(1);
-	var GameView = __webpack_require__(7);
+	var GameView = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"./lib/gameView.js\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 	var Util = __webpack_require__(2);
 	var PlayerCell = __webpack_require__(3);
 	var EnemyCell = __webpack_require__(6);
@@ -80,7 +80,7 @@
 	var Util = __webpack_require__(2);
 
 	var PlayerCell = __webpack_require__(3);
-	var RivalCell = __webpack_require__(5);
+	var RivalCell = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"./rivalCell.js\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 	var EnemyCell = __webpack_require__(6);
 
 	DIM_X = window.innerWidth;
@@ -166,6 +166,7 @@
 	    return [0,0];
 	  }
 	  var buffer = this.playerCell.radius;
+
 	  var distance = Util.distance(pos, window.MOUSE_POS);
 
 	  var diffX = (window.MOUSE_POS[0] - pos[0])/buffer;
@@ -420,59 +421,7 @@
 
 
 /***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var MovingObject = __webpack_require__(4);
-	var Util = __webpack_require__(2);
-
-	var RivalCell = function(options) {
-	  options.pos = options.pos;
-	  options.vel = options.vel || [0, 0];
-	  options.radius = options.radius || 20;
-	  options.color = "#F00";
-
-	  this.follow = follow;
-	  this.seek = seek;
-
-	  MovingObject.call(this, options);
-	}
-
-	var follow = function(pos, buffer) {
-	  var vel = findVel(this.pos, pos, this.radius, buffer);
-	  // if (!vel === 'undefined') { this.vel = vel }
-	  this.vel = vel;
-	  this.move();
-	};
-
-	var seek = function(pos) {
-	  this.vel = [(pos[0] - this.pos[0]), (pos[1] - this.pos[1])];
-	  this.move();
-	};
-
-	var findVel = function(pos1, pos2, radius, buffer) {
-	  if (pos1 === undefined || pos2 === undefined) {
-	    return;
-	  }
-
-	  var distX = pos2[0] - pos1[0];
-	  var distY = pos2[1] - pos1[1];
-
-	  var leadX = distX > 0 ? 100 : -100
-	  var leadY = distY > 0 ? 100 : -100
-
-	  var diffX = (distX + leadX)/buffer;
-	  var diffY = (distY + leadY)/buffer;
-	  return [(diffX), (diffY)];
-	};
-
-
-	Util.inherits(RivalCell, MovingObject);
-
-	module.exports = RivalCell;
-
-
-/***/ },
+/* 5 */,
 /* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -526,106 +475,6 @@
 	Util.inherits(EnemyCell, MovingObject);
 
 	module.exports = EnemyCell;
-
-
-/***/ },
-/* 7 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	var Game = __webpack_require__(1);
-
-	window.MOUSE_POS = [];
-
-	document.onmousemove = function(event) {
-	  window.MOUSE_POS = [event.clientX, event.clientY];
-	};
-
-	var GameView = function(game, ctx) {
-	  this.game = game;
-	  this.ctx = ctx;
-	  this.game.addPlayerCell();
-	  this.game.addRivalCell();
-	};
-
-
-	GameView.prototype.welcome = function() {
-	  this.ctx.clearRect(0, 0, DIM_X, DIM_Y);
-	  this.ctx.fillStyle = "#000000";
-	  this.ctx.fillRect(0, 0, DIM_X, DIM_Y);
-
-	  this.displayMessage();
-	};
-
-	GameView.prototype.displayMessage = function() {
-	  var xPos = (DIM_X/2);
-	  var yPos = (DIM_Y/2);
-
-	  this.ctx.strokeStyle = "#C9C9C9";
-	  this.ctx.fillStyle = "#FFFFFF";
-
-
-	  this.ctx.textBaseline="center";
-	  this.ctx.textAlign="center";
-	  this.ctx.font="24px Inconsolata";
-	  this.ctx.fillText("Cellular", xPos, yPos - 70);
-	  this.ctx.font="16px Inconsolata";
-	  this.ctx.fillText("Guide your cell with the mouse cursor to eat the other cells!",
-	                   xPos, yPos - 30);
-	  this.ctx.fillText("But watch out for your rival!",
-	                   xPos, yPos);
-	  this.ctx.fillText("The larger cells well eat you too if you get too close, so be careful!",
-	                   xPos, yPos + 30);
-	  this.ctx.fillText("Press 'Space' to start the game, press 'R' to restart at anytime",
-	                   xPos, yPos + 80);
-	};
-
-	GameView.prototype.end = function() {
-	  this.ctx.clearRect(0, 0, DIM_X, DIM_Y);
-	  this.ctx.fillStyle = "#000000";
-	  this.ctx.fillRect(0, 0, DIM_X, DIM_Y);
-
-	  var xPos = (DIM_X/2);
-	  var yPos = (DIM_Y/2);
-	  this.ctx.fillStyle = "#C9C9C9";
-
-	  this.ctx.textBaseline="center";
-	  this.ctx.textAlign="center";
-
-	  this.ctx.font="24px Inconsolata";
-	  this.ctx.fillText("GAME OVER!", xPos, yPos - 70);
-
-	  this.ctx.font="16px Inconsolata";
-	  this.ctx.fillText("You were eaten!",
-	                   xPos, yPos - 30);
-	  this.ctx.fillText("Your score was: " + this.game.points,
-	                   xPos, yPos);
-	  this.ctx.fillText("Press 'R' to play again!",
-	                   xPos, yPos + 30);
-	}
-
-	GameView.prototype.start = function() {
-	  this.ctx.clearRect(0, 0, DIM_X, DIM_Y);
-	  this.ctx.fillStyle = "#000000";
-	  this.ctx.fillRect(0, 0, DIM_X, DIM_Y);
-
-	  requestAnimationFrame(this.animate.bind(this));
-	};
-
-	GameView.prototype.animate = function() {
-	  if (!this.game.gameOver) {
-	    this.game.draw(this.ctx);
-	    requestAnimationFrame(this.animate.bind(this));
-	  } else {
-	    this.end();
-	  }
-	};
-
-
-
-
-
-	module.exports = GameView;
 
 
 /***/ }

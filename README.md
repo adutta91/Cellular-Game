@@ -11,6 +11,7 @@ to chase you when it is larger than you, or eat smaller cells until it IS larger
 than you. There is a chance, though! You can eat your rival when you are larger,
 gaining you a whopping 50 point. But beware!! - It'll be back, and in greater size...
 
+
 ####Enemy Cells
 The enemy cells that are larger than you have nothing to worry about, so they wander
 the space they're given. The smaller cells will try to avoid you if you get too close,

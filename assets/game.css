@@ -1,4 +1,5 @@
 
+<<<<<<< HEAD
 
 /*#canvas {
   margin: 50px;
@@ -7,4 +8,15 @@
 .canvasWrapper {
   width: 100%;
   height: 100%;
+=======
+/*canvas {
+  position: absolute;
+  margin: auto;
+  display: block;
+  height: 90%;
+  width: 90%;
+  border-radius: 1.5em;
+  border: solid 5px white;
+
+>>>>>>> 627b230a72215c1202f37e8ebcba819f487fe903
 }*/

@@ -352,7 +352,7 @@
 	  options.pos = options.pos;
 	  options.vel = options.vel || [0, 0];
 	  options.radius = 15;
-	  options.color = "#FFFFFF";
+	  options.color = "#4FB34F";
 
 	  MovingObject.call(this, options);
 	}

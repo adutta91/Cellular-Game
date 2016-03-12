@@ -683,10 +683,12 @@
 	                   xPos, yPos - 30);
 	  this.ctx.fillText("But watch out for your rival!",
 	                   xPos, yPos);
-	  this.ctx.fillText("The larger cells well eat you too if you get too close, so be careful!",
+	  this.ctx.fillText("You lose a life each time you're eaten. You only have 3, as does your rival",
 	                   xPos, yPos + 30);
+	  this.ctx.fillText("The larger cells well eat you too if you get too close, so be careful!",
+	                   xPos, yPos + 60);
 	  this.ctx.fillText("Press 'Space' to start the game, press 'R' to restart at anytime",
-	                   xPos, yPos + 80);
+	                   xPos, yPos + 110);
 	}
 
 	GameView.prototype.end = function() {

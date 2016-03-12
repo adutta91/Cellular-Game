@@ -1,12 +1,12 @@
 ##Cellular - [Game][link]
 Cellular is a browser JavaScript game inspired by the popular [Agario][agar]. The purpose
 of the game is to control your cell to eat those cells that are smaller than you,
-avoiding the larger cells.
+avoiding the larger cells. You win once you've depleted your rival's lives.
 
 ###AI Description
 
 ####Your Rival
-The game begins with your rival slightly larger than you. The rival cell is programmed
+The game begins with your rival slightly smaller than you. The rival cell is programmed
 to chase you when it is larger than you, or eat smaller cells until it IS larger
 than you. There is a chance, though! You can eat your rival when you are larger,
 gaining you a whopping 50 point. But beware!! - It'll be back, and in greater size...

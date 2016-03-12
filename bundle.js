@@ -265,7 +265,7 @@
 	      this.resetRival();
 	    } else {
 	      this.consume(rival, player);
-	      this.playerLives -= 1
+	      this.playerLives -= 1;
 	      this.resetPlayer();
 	    }
 	  }
@@ -290,7 +290,8 @@
 	  if (player.radius > enemy.radius) {
 	    this.consume(player, enemy);
 	  } else if (enemy.radius >= player.radius) {
-	    this.gameOver = true;
+	    this.playerLives -= 1;
+	    this.resetPlayer();
 	  }
 	};
 

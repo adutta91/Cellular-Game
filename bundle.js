@@ -123,7 +123,7 @@
 	  this.checkGameStatus(this.playerLives, this.rivalLives);
 	  this.playerCell = null;
 	  var newPlayer = new PlayerCell({
-	    pos: [100, DIM_Y/2]
+	    pos: [DIM_X/2, DIM_Y/2]
 	  });
 	  setTimeout(function() {
 	    this.add(newPlayer);
@@ -177,7 +177,7 @@
 	  for (var i = 0; i < this.playerLives; i++) {
 	    ctx.beginPath();
 	    ctx.arc(
-	      (xPos + i*30), 30, 10, 0, 2 * Math.PI, true
+	      (xPos + i * 30), 30, 10, 0, 2 * Math.PI, true
 	    );
 	    ctx.stroke();
 	    ctx.fill();
@@ -334,7 +334,7 @@
 	  var smallerRad = this.findSmallerRadius();
 
 	  if (!Util.smallEnemiesExist(smallerRad, this.enemyCells)) {
-	    radius = 10;
+	    radius = Util.getRandomInRange(10, smallerRad);
 	  }
 
 	  var vel = Util.findVel(radius);
@@ -353,7 +353,6 @@
 
 	  var player = this.playerCell;
 	  var rival = this.rivalCell;
-
 
 	  if (player && rival) {
 	    rad = ((player.radius < rival.radius) ? player.radius : rival.radius)

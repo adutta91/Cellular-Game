@@ -89,9 +89,10 @@
 	var Game = function () {
 	  this.enemyCells = [];
 	  this.playerCell = {};
-	  this.rivalCell = {};
+	  this.rivalCell = null;
 	  this.points = 0;
 	  this.gameOver = false;
+	  this.playerWins = false;
 	};
 
 
@@ -107,26 +108,55 @@
 	  }
 	};
 
-	Game.prototype.addPlayerCell = function() {
+	Game.prototype.addPlayerCell = function(ctx) {
 	  var playerCell = new PlayerCell({
-	    pos: [100, DIM_Y/2]
+	    pos: [DIM_X/2, DIM_Y/2],
+	    lives: 3
 	  });
 	  this.add(playerCell);
+	};
+
+	Game.prototype.resetPlayer = function() {
+	  this.checkGameStatus(this.playerCell.lives, this.rivalCell.lives)
+	  var lives = this.playerCell.lives;
+	  this.playerCell = null;
+	  var newPlayer = new PlayerCell({
+	    pos: [100, DIM_Y/2],
+	    lives: lives
+	  });
+	  setTimeout(function() {
+	    this.add(newPlayer);
+	  }.bind(this), 2000);
 	};
 
 	Game.prototype.addRivalCell = function() {
 	  var rivalCell = new RivalCell({
 	    pos: [DIM_X - 100, DIM_Y/2],
 	    vel: [0, 0],
-	    radius: this.playerCell.radius + 5
+	    radius: this.playerCell.radius - 2,
+	    lives: 3
 	  });
 	  this.add(rivalCell);
 	};
 
+	Game.prototype.resetRival = function() {
+	  this.checkGameStatus(this.playerCell.lives, this.rivalCell.lives)
+	  var lives = this.rivalCell.lives;
+	  this.rivalCell = null;
+	  var newRival = new RivalCell({
+	    pos: [DIM_X - 100, DIM_Y/2],
+	    vel: [0, 0],
+	    radius: this.playerCell.radius - 2,
+	    lives: lives
+	  });
+	  setTimeout(function() {
+	    this.add(newRival);
+	  }.bind(this), 2000);
+	};
 
 	Game.prototype.draw = function(ctx) {
 	  ctx.clearRect(0, 0, DIM_X, DIM_Y);
-	  ctx.fillStyle = "#000000";
+	  ctx.fillStyle = "#C9C9C9";
 	  ctx.fillRect(0, 0, DIM_X, DIM_Y);
 
 	  this.checkCollisions();
@@ -147,12 +177,19 @@
 	};
 
 	Game.prototype.moveMainCells = function(ctx) {
-	  this.playerCell.vel = this.findVel(this.playerCell.pos);
-	  this.playerCell.move();
-	  this.playerCell.draw(ctx);
-	  if (this.rivalCell !== null) {
-	    if (this.playerCell.radius < this.rivalCell.radius) {
-	      this.rivalCell.follow(this.playerCell.pos, (this.rivalCell.radius * 4));
+	  if (this.playerCell) {
+	    this.playerCell.vel = this.findVel(this.playerCell.pos);
+	    this.playerCell.move();
+	    this.playerCell.draw(ctx);
+	  }
+	  if (this.rivalCell) {
+	    if (this.playerCell) {
+	      if (this.playerCell.radius < this.rivalCell.radius) {
+	        this.rivalCell.follow(this.playerCell.pos, (this.rivalCell.radius * 4));
+	      } else {
+	        var newPos = Util.findSmallerPos(this.rivalCell.radius, this.enemyCells);
+	        this.rivalCell.follow(newPos, (this.rivalCell.radius * 3));
+	      }
 	    } else {
 	      var newPos = Util.findSmallerPos(this.rivalCell.radius, this.enemyCells);
 	      this.rivalCell.follow(newPos, (this.rivalCell.radius * 3));
@@ -176,7 +213,10 @@
 	};
 
 	Game.prototype.moveEnemies = function() {
-	  var player = this.playerCell;
+	  var player = {radius: 14, pos: undefined}
+	  if (this.playerCell) {
+	    player = this.playerCell;
+	  }
 	  var rival = this.rivalCell;
 	  if (rival === null) { rival = {} };
 	  this.enemyCells.forEach(function(cell) {
@@ -195,14 +235,16 @@
 	Game.prototype.checkCollisions = function() {
 	  var player = this.playerCell
 	  var rival = this.rivalCell
-	  if (player.hasCollidedWith(rival)) {
+
+	  if (player && player.hasCollidedWith(rival)) {
 	    if (player.radius > rival.radius) {
 	      this.consume(player, rival);
-	      this.rivalCell = null;
-	      setTimeout(this.addRivalCell.bind(this), 10000);
-	      this.points += 50;
+	      this.rivalCell.lives -= 1;
+	      this.resetRival();
 	    } else {
-	      this.gameOver = true;
+	      this.consume(rival, player);
+	      this.playerCell.lives -= 1
+	      this.resetPlayer();
 	    }
 	  }
 	  this.enemyCells.forEach(function(cell) {
@@ -214,6 +256,14 @@
 	  }.bind(this));
 	};
 
+	Game.prototype.checkGameStatus = function(playerLives, rivalLives) {
+	  if (rivalLives === 0) {
+	    this.playerWins = true;
+	  } else if (playerLives === 0) {
+	    this.gameOver = true;
+	  }
+	};
+
 	Game.prototype.handleCollision = function(player, enemy) {
 	  if (player.radius > enemy.radius) {
 	    this.consume(player, enemy);
@@ -223,7 +273,11 @@
 	};
 
 	Game.prototype.checkEnemies = function() {
-	  var numEnemies = Math.floor(this.playerCell.radius / 5)
+	  var radius = 10;
+	  if (this.playerCell) {
+	    radius = this.playerCell.radius;
+	  }
+	  var numEnemies = Math.floor(radius / 5);
 
 	  this.enemyCells.forEach(function(cell) {
 	    if ((cell.pos[0] < 0 || cell.pos[0] > DIM_X) || (cell.pos[1] < 0 || cell.pos[1] > DIM_Y)) {
@@ -255,12 +309,16 @@
 
 	Game.prototype.createEnemyCell = function() {
 	  var pos = Util.randomPos();
-	  var radius = Util.randomSize(this.playerCell.radius);
-	  var vel = Util.findVel(radius);
+	  var radius = 10;
 
-	  if (!Util.smallEnemiesExist(this.playerCell.radius, this.enemyCells)) {
+	  if (this.playerCell) {
+	    radius = Util.randomSize(this.playerCell.radius);
+	  }
+	  if (!Util.smallEnemiesExist(radius, this.enemyCells)) {
 	    radius = 10;
 	  }
+
+	  var vel = Util.findVel(radius);
 
 	  var enemyCell = new EnemyCell({
 	    pos: pos,
@@ -295,10 +353,12 @@
 	};
 
 	Util.distance = function(pos1, pos2) {
-	  var distX = pos1[0] - pos2[0];
-	  var distY = pos1[1] - pos2[1];
-	  var distance = Math.sqrt((distX * distX) + (distY * distY));
-	  return distance;
+	  if (pos1 && pos2) {
+	    var distX = pos1[0] - pos2[0];
+	    var distY = pos1[1] - pos2[1];
+	    var distance = Math.sqrt((distX * distX) + (distY * distY));
+	    return distance;
+	  }
 	};
 
 	Util.randomPos = function() {
@@ -319,7 +379,7 @@
 	Util.smallEnemiesExist = function(playerRadius, enemies) {
 	  var result = false;
 	  enemies.forEach(function(cell) {
-	    if (cell.radius < playerRadius) {
+	    if ((playerRadius - cell.radius) > 5) {
 	      result = true;
 	    }
 	  });
@@ -355,7 +415,8 @@
 	  options.pos = options.pos;
 	  options.vel = options.vel || [0, 0];
 	  options.radius = 15;
-	  options.color = "#4FB34F";
+	  options.color = options.color || "#4FB34F";
+	  this.lives = options.lives;
 
 	  MovingObject.call(this, options);
 	}
@@ -381,11 +442,13 @@
 
 	MovingObject.prototype.draw = function(ctx) {
 	  ctx.fillStyle = this.color;
+	  ctx.strokeStyle = "#000000";
 
 	  ctx.beginPath();
 	  ctx.arc(
 	    this.pos[0], this.pos[1], this.radius, 0, 2 * Math.PI, true
 	  );
+	  ctx.stroke();
 	  ctx.fill();
 	};
 
@@ -431,7 +494,9 @@
 	  options.pos = options.pos;
 	  options.vel = options.vel || [0, 0];
 	  options.radius = options.radius || 20;
-	  options.color = "#F00";
+	  options.color = "#CA4343";
+
+	  this.lives = options.lives;
 
 	  this.follow = follow;
 	  this.seek = seek;
@@ -440,12 +505,11 @@
 	}
 
 	var follow = function(pos, buffer) {
-
 	  var vel = findVel(this.pos, pos, this.radius, buffer);
-	  // if (!vel === 'undefined') { this.vel = vel }
 	  this.vel = vel;
+	  if (typeof this.vel === "undefined") { vel = [0,0] }
 	  this.move();
-	};
+	}; 
 
 	var seek = function(pos) {
 	  this.vel = [(pos[0] - this.pos[0]), (pos[1] - this.pos[1])];
@@ -485,16 +549,18 @@
 	  options.pos = options.pos;
 	  options.vel = options.vel || [0, 0];
 	  options.radius = options.radius;
-	  options.color = "#00F";
+	  options.color = "#628FD8";
 
 	  this.avoid = avoid;
 	  this.wander = wander;
+	  this.wanderingInterval = null;
 
 	  MovingObject.call(this, options);
 	};
 
 
 	var avoid = function(player, rival) {
+	  clearInterval(this.wanderingInterval);
 	  var target = player;
 	  if (rival) {
 	    var rivalDist = Util.distance(this.pos, rival);
@@ -508,10 +574,17 @@
 	};
 
 	var wander = function() {
-	  // this.vel[0] = (this.vel[0] * Math.random());
-	  // this.vel[1] = (this.vel[1] * Math.random());
+
+	  // this.wanderingInterval = setInterval(3000, changeVel.bind(this));
 
 	  this.move();
+	};
+
+	var changeVel = function() {
+	  var velX = Util.getRandomInRange(20, 100)/(this.radius);
+	  var velY = Util.getRandomInRange(20, 100)/(this.radius);
+
+	  this.vel = [Util.getRandomInRange(0, 5), Util.getRandomInRange(0, 5)]
 	};
 
 	var findVel = function(pos1, pos2, radius) {
@@ -546,8 +619,8 @@
 	var GameView = function(game, ctx) {
 	  this.game = game;
 	  this.ctx = ctx;
-	  this.game.addPlayerCell();
-	  this.game.addRivalCell();
+	  this.game.addPlayerCell(ctx);
+	  setTimeout(game.addRivalCell.bind(game), 5000);
 	};
 
 
@@ -598,10 +671,28 @@
 	  this.ctx.fillText("GAME OVER!", xPos, yPos - 70);
 
 	  this.ctx.font="16px Inconsolata";
-	  this.ctx.fillText("You were eaten!",
+	  this.ctx.fillText("You lost!",
 	                   xPos, yPos - 30);
-	  this.ctx.fillText("Your score was: " + this.game.points,
-	                   xPos, yPos);
+	  this.ctx.fillText("Press 'R' to play again!",
+	                   xPos, yPos + 30);
+	}
+
+	GameView.prototype.win = function() {
+	  this.ctx.clearRect(0, 0, DIM_X, DIM_Y);
+	  this.ctx.fillStyle = "#000000";
+	  this.ctx.fillRect(0, 0, DIM_X, DIM_Y);
+
+	  var xPos = (DIM_X/2);
+	  var yPos = (DIM_Y/2);
+	  this.ctx.fillStyle = "#C9C9C9";
+
+	  this.ctx.textBaseline="center";
+	  this.ctx.textAlign="center";
+
+	  this.ctx.font="24px Inconsolata";
+	  this.ctx.fillText("YOU WIN!", xPos, yPos - 70);
+
+	  this.ctx.font="16px Inconsolata";
 	  this.ctx.fillText("Press 'R' to play again!",
 	                   xPos, yPos + 30);
 	}
@@ -615,11 +706,13 @@
 	};
 
 	GameView.prototype.animate = function() {
-	  if (!this.game.gameOver) {
+	  if (!this.game.gameOver && !this.game.playerWins) {
 	    this.game.draw(this.ctx);
 	    requestAnimationFrame(this.animate.bind(this));
-	  } else {
+	  } else if (this.game.gameOver) {
 	    this.end();
+	  } else {
+	    this.win();
 	  }
 	};
 

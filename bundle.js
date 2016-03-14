@@ -123,7 +123,8 @@
 	  this.checkGameStatus(this.playerLives, this.rivalLives);
 	  this.playerCell = null;
 	  var newPlayer = new PlayerCell({
-	    pos: [DIM_X/2, DIM_Y/2]
+	    pos: [DIM_X/2, DIM_Y/2],
+	    radius: this.rivalCell.radius
 	  });
 	  setTimeout(function() {
 	    this.add(newPlayer);
@@ -451,7 +452,7 @@
 	var PlayerCell = function(options) {
 	  options.pos = options.pos;
 	  options.vel = options.vel || [0, 0];
-	  options.radius = 15;
+	  options.radius = options.radius || 15;
 	  options.color = options.color || "#4FB34F";
 
 	  MovingObject.call(this, options);

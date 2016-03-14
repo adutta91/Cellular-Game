@@ -156,8 +156,7 @@
 
 	Game.prototype.draw = function(ctx) {
 	  ctx.clearRect(0, 0, DIM_X, DIM_Y);
-	  ctx.fillStyle = "#C9C9C9";
-	  ctx.fillRect(0, 0, DIM_X, DIM_Y);
+
 	  this.drawPlayerLives(ctx);
 	  this.drawRivalLives(ctx);
 
@@ -455,6 +454,7 @@
 	  options.radius = options.radius || 15;
 	  options.color = options.color || "#4FB34F";
 
+
 	  MovingObject.call(this, options);
 	}
 
@@ -480,6 +480,7 @@
 	MovingObject.prototype.draw = function(ctx) {
 	  ctx.fillStyle = this.color;
 	  ctx.strokeStyle = "#000000";
+	  ctx.lineWidth = 3;
 
 	  ctx.beginPath();
 	  ctx.arc(
@@ -584,7 +585,7 @@
 	  options.pos = options.pos;
 	  options.vel = options.vel || [0, 0];
 	  options.radius = options.radius;
-	  options.color = "#628FD8";
+	  options.color = "#058F98";
 
 	  this.avoid = avoid;
 	  this.wander = wander;
@@ -661,8 +662,6 @@
 
 	GameView.prototype.welcome = function() {
 	  this.ctx.clearRect(0, 0, DIM_X, DIM_Y);
-	  this.ctx.fillStyle = "#000000";
-	  this.ctx.fillRect(0, 0, DIM_X, DIM_Y);
 
 	  this.displayMessage();
 	};
@@ -671,73 +670,55 @@
 	  var xPos = (DIM_X/2);
 	  var yPos = (DIM_Y/2);
 
-	  this.ctx.strokeStyle = "#C9C9C9";
 	  this.ctx.fillStyle = "#FFFFFF";
-
-
 	  this.ctx.textBaseline="center";
 	  this.ctx.textAlign="center";
+
 	  this.ctx.font="24px Inconsolata";
-	  this.ctx.fillText("Cellular", xPos, yPos - 70);
-	  this.ctx.font="16px Inconsolata";
-	  this.ctx.fillText("Guide your cell with the mouse cursor to eat the other cells!",
-	                   xPos, yPos - 30);
-	  this.ctx.fillText("But watch out for your rival!",
-	                   xPos, yPos);
-	  this.ctx.fillText("You lose a life each time you're eaten. You only have 3, as does your rival",
-	                   xPos, yPos + 30);
-	  this.ctx.fillText("The larger cells well eat you too if you get too close, so be careful!",
-	                   xPos, yPos + 60);
 	  this.ctx.fillText("Press 'Space' to start the game, press 'R' to restart at anytime",
-	                   xPos, yPos + 110);
+	                   xPos, yPos - 70);
+
+	  this.ctx.font="20px Inconsolata";
+	  this.ctx.fillText("Instructions below",
+	                   xPos, yPos + 30);
 	}
 
 	GameView.prototype.end = function() {
-	  this.ctx.clearRect(0, 0, DIM_X, DIM_Y);
-	  this.ctx.fillStyle = "#000000";
-	  this.ctx.fillRect(0, 0, DIM_X, DIM_Y);
-
 	  var xPos = (DIM_X/2);
 	  var yPos = (DIM_Y/2);
-	  this.ctx.fillStyle = "#C9C9C9";
 
+	  this.ctx.fillStyle = "#FFFFFF";
 	  this.ctx.textBaseline="center";
 	  this.ctx.textAlign="center";
 
 	  this.ctx.font="24px Inconsolata";
-	  this.ctx.fillText("GAME OVER!", xPos, yPos - 70);
+	  this.ctx.fillText("Game Over!!!",
+	                   xPos, yPos - 70);
 
-	  this.ctx.font="16px Inconsolata";
-	  this.ctx.fillText("You lost!",
-	                   xPos, yPos - 30);
-	  this.ctx.fillText("Press 'R' to play again!",
+	  this.ctx.font="20px Inconsolata";
+	  this.ctx.fillText("You Lost!",
 	                   xPos, yPos + 30);
 	}
 
 	GameView.prototype.win = function() {
-	  this.ctx.clearRect(0, 0, DIM_X, DIM_Y);
-	  this.ctx.fillStyle = "#000000";
-	  this.ctx.fillRect(0, 0, DIM_X, DIM_Y);
-
 	  var xPos = (DIM_X/2);
 	  var yPos = (DIM_Y/2);
-	  this.ctx.fillStyle = "#C9C9C9";
 
+	  this.ctx.fillStyle = "#FFFFFF";
 	  this.ctx.textBaseline="center";
 	  this.ctx.textAlign="center";
 
 	  this.ctx.font="24px Inconsolata";
-	  this.ctx.fillText("YOU WIN!", xPos, yPos - 70);
+	  this.ctx.fillText("You Won!!",
+	                   xPos, yPos - 70);
 
-	  this.ctx.font="16px Inconsolata";
-	  this.ctx.fillText("Press 'R' to play again!",
+	  this.ctx.font="20px Inconsolata";
+	  this.ctx.fillText("Press 'R' to play again",
 	                   xPos, yPos + 30);
 	}
 
 	GameView.prototype.start = function() {
 	  this.ctx.clearRect(0, 0, DIM_X, DIM_Y);
-	  this.ctx.fillStyle = "#000000";
-	  this.ctx.fillRect(0, 0, DIM_X, DIM_Y);
 
 	  requestAnimationFrame(this.animate.bind(this));
 	};

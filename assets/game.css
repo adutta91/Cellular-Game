@@ -1,6 +1,4 @@
 
-<<<<<<< HEAD
-
 /*#canvas {
   margin: 50px;
 }
@@ -17,6 +15,71 @@
   width: 90%;
   border-radius: 1.5em;
   border: solid 5px white;
-
->>>>>>> 627b230a72215c1202f37e8ebcba819f487fe903
 }*/
+
+canvas {
+  margin: auto;
+  display: block;
+  height: 650px;
+  width: 1150px;
+  border-radius: 1.5em;
+  border: solid 5px white;
+  background: url("http://res.cloudinary.com/dzyfczxnr/image/upload/v1457994203/cell-division_vjki43.jpg") no-repeat center center fixed;
+}
+
+body {
+  font-family: Inconsolata;
+  color: #FFFFFF;
+  font-size: 18px;
+  text-align: center;
+  background-image: url("http://res.cloudinary.com/dzyfczxnr/image/upload/v1457994289/cell_bg_zvmate.jpg");
+}
+
+.canvasWrapper {
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  width: 1150px;
+  align-items: flex-end;
+}
+
+.title {
+  font-size: 36px;
+  text-shadow: 2px 4px 3px rgba(0,0,0,1);
+}
+
+.controls {
+  background: #4E4D4D;
+  border: 1px solid black;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background-color: rgba(0,0,0,0.4);
+  color: white;
+  padding: 15px;
+}
+
+.yourCell {
+  color: #4FB34F;
+  text-shadow: 2px 4px 3px rgba(0,0,0,1);
+}
+
+.rivalCell {
+  color: #CA4343;
+  text-shadow: 2px 4px 3px rgba(0,0,0,1);
+}
+
+.control {
+  color: #C9C9C9;
+  /*text-shadow: 2px 4px 3px rgba(255,255,255,1);*/
+}

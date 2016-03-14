@@ -122,9 +122,16 @@
 	Game.prototype.resetPlayer = function() {
 	  this.checkGameStatus(this.playerLives, this.rivalLives);
 	  this.playerCell = null;
+
+	  var radius = 15;
+
+	  if (this.rivalCell) {
+	    radius = this.rivalCell.radius;
+	  }
+
 	  var newPlayer = new PlayerCell({
 	    pos: [DIM_X/2, DIM_Y/2],
-	    radius: this.rivalCell.radius
+	    radius: radius
 	  });
 	  setTimeout(function() {
 	    this.add(newPlayer);
@@ -144,10 +151,17 @@
 	Game.prototype.resetRival = function() {
 	  this.checkGameStatus(this.playerLives, this.rivalLives);
 	  this.rivalCell = null;
+
+	  var radius = 15;
+
+	  if (this.playerCell) {
+	    radius = this.playerCell.radius - 1;
+	  }
+
 	  var newRival = new RivalCell({
 	    pos: [DIM_X - 100, DIM_Y/2],
 	    vel: [0, 0],
-	    radius: this.playerCell.radius - 2
+	    radius: radius
 	  });
 	  setTimeout(function() {
 	    this.add(newRival);
